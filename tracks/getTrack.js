@@ -51,6 +51,6 @@ module.exports = async (data) => {
     }
     songs.push(song);
   }
-  console.log(songs);
+
   return songs;
 };
