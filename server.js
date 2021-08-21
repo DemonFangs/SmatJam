@@ -17,7 +17,7 @@ const send = (res, status, text) => {
   res.end(stringText);
 }; // send
 
-const sanitizePath = path => PATH_PREFIX + path.replace(/\.\./g, '.');
+const sanitizePath = path => (path.match(/https:\/\/[^\/]+\/([^\/?])+/) || [])[1];
 
 const tryJSONParse = string =>
   new Promise((ok, fail) => {

@@ -4,12 +4,13 @@ const options = { method: 'GET' };
 const { request } = require('https');
 
 const constructUrl = (path = '', data = {}) => {
-  const params = Object.keys(data).map(key => `${key}=${JSON.stringify(value)}`);
+  const params = Object.keys(data).map(key => `${key}=${JSON.stringify(data[key])}`);
   return `${API_URL}${path}?format=jsonp&callback=callback&apikey=${API_KEY}&${params.join('&')}`;
 };
 
 module.exports = async (path, data) => {
   const endpoint = constructUrl(path, data);
+  console.log('Requesting data from ', endpoint);
   return new Promise((ok, fail) => {
     request(
       endpoint,
@@ -21,10 +22,11 @@ module.exports = async (path, data) => {
         res.on('end', () => {
           try {
             const allChunks = chunks.join('');
+            const message = allChunks.replace(/callback\((.*)\);/, '$1');
             let responseObj;
             let content;
             try {
-              responseObj = JSON.parse(str);
+              responseObj = JSON.parse(message);
               content = responseObj?.message?.body;
             } catch (err) {
               content = allChunks;

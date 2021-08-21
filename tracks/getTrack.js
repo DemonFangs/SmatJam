@@ -15,7 +15,7 @@ const extractFiveWords = (text = '') =>
       if (!index) return word;
 
       const searchReg = new RegExp(`.{${index}}[^ ]+ ([^ ]+)`);
-      return text.match(searchReg)[1];
+      return (text.match(searchReg) || ['', word])[1];
     })
     .join(' ');
 
@@ -32,11 +32,11 @@ module.exports = async (data) => {
   params.page = page_number || 1;
   const songs = [];
   for (let index = 0; index < ITEMS_PER_PAGE; index += 1) {
-    const song = await musicMatch('track.search', {});
-    if (!song?.tracks?.length) break;
+    const body = await musicMatch('track.search', params);
+    if (!body?.track_list?.length) break;
     
-    const [{ track }] = song.tracks;
-    const lyrics = getLyrics(track);
+    const [{ track }] = body.track_list;
+    const lyrics = await getLyrics(track);
     if (!lyrics) {
       // Song does not contain any lyric. null is an indicator for no more tracks left
       // exit and return the cached number of songs to App
@@ -44,9 +44,13 @@ module.exports = async (data) => {
       break;
     }
     params.q_lyrics = extractFiveWords(lyrics);
-    params.page += 1;
+    const song = {
+      title: track.track_name,
+      artist: track.artist_name,
+      lyrics
+    }
     songs.push(song);
   }
-
+  console.log(songs);
   return songs;
 };
